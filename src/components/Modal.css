@@ -1,0 +1,129 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  background: var(--white);
+  border-radius: 15px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2rem 1rem;
+  border-bottom: 2px solid var(--light-gray);
+}
+
+.modal-header h2 {
+  color: var(--black);
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--gray);
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: var(--light-gray);
+  color: var(--black);
+}
+
+.modal-body {
+  padding: 1rem 2rem 2rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 95%;
+    margin: 20px;
+  }
+  
+  .modal-header {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .modal-body {
+    padding: 1rem 1.5rem 1.5rem;
+  }
+}
+
+/* Добавете тези стилове в Modal.css */
+
+.modal-content.medium {
+  max-width: 600px;
+}
+
+.modal-content.large {
+  max-width: 900px;
+}
+
+.modal-content.small {
+  max-width: 400px;
+}
+
+@media (max-width: 968px) {
+  .modal-content.large {
+    max-width: 95%;
+    margin: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content.medium,
+  .modal-content.large,
+  .modal-content.small {
+    max-width: 95%;
+    margin: 20px;
+  }
+}

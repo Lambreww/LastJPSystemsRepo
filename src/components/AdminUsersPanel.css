@@ -1,0 +1,128 @@
+.admin-users-panel {
+  padding: 1rem;
+  color: var(--dark-gray);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.admin-header {
+  text-align: center;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--orange);
+  padding-bottom: 0.75rem;
+}
+
+.admin-header h2 {
+  margin: 0 0 0.25rem 0;
+  color: var(--black);
+}
+
+.admin-header p {
+  margin: 0;
+  color: var(--gray);
+}
+
+.error-box {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #ff6b6b;
+  border-radius: 10px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  outline: none;
+}
+
+.refresh-btn {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+}
+
+.table-wrap {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th {
+  text-align: left;
+  padding: 12px;
+  background: rgba(0,0,0,0.04);
+  border-bottom: 1px solid #ddd;
+}
+
+.users-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.center {
+  text-align: center;
+  color: var(--gray);
+}
+
+.role-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+}
+
+.role-pill.admin {
+  /* оставям без конкретни цветове, ползва border */
+}
+
+.role-pill.user {
+  /* оставям без конкретни цветове */
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.role-btn {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+}
+
+.role-btn.primary {
+  border-color: var(--orange);
+}
+
+.admin-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.close-btn {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+}

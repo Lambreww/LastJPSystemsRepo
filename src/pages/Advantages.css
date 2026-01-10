@@ -1,0 +1,142 @@
+.advantages-page {
+  /* ✅ работи и ако нямаш --header-height: */
+  padding-top: calc(var(--header-height, 96px) + 28px);
+  padding-bottom: 80px;
+
+  background: radial-gradient(900px 420px at 15% 5%, rgba(255, 107, 0, 0.14), transparent 60%),
+              radial-gradient(900px 420px at 85% 20%, rgba(255, 107, 0, 0.08), transparent 55%),
+              #121212;
+  color: var(--white);
+}
+
+.advantages-hero {
+  margin-bottom: 28px;
+  padding: 18px 0 10px;
+}
+
+.advantages-hero h1 {
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  line-height: 1.15;
+  margin-bottom: 12px;
+  letter-spacing: 0.2px;
+}
+
+.advantages-hero h1::after {
+  content: "";
+  display: block;
+  width: 92px;
+  height: 4px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: var(--orange);
+}
+
+.advantages-hero p {
+  max-width: 980px;
+  font-size: 1.08rem;
+  line-height: 1.9;
+  opacity: 0.92;
+}
+
+.advantages-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.adv-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  padding: 18px 18px;
+  box-shadow: 0 14px 32px rgba(0,0,0,0.25);
+}
+
+.adv-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.adv-card h2 {
+  font-size: 1.35rem;
+  letter-spacing: 0.2px;
+}
+
+.adv-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  color: var(--white);
+  background: rgba(255, 107, 0, 0.16);
+  border: 1px solid rgba(255, 107, 0, 0.28);
+  white-space: nowrap;
+}
+
+.adv-subtitle {
+  font-size: 1.05rem;
+  margin: 6px 0 10px;
+  opacity: 0.9;
+}
+
+.adv-list {
+  padding-left: 1.15rem;
+  line-height: 1.85;
+  opacity: 0.92;
+}
+
+.adv-list li + li {
+  margin-top: 6px;
+}
+
+.adv-table-card {
+  margin-top: 18px;
+}
+
+.adv-table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.adv-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+.adv-table tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.adv-td-label,
+.adv-td-value {
+  padding: 12px 14px;
+}
+
+.adv-td-label {
+  width: 45%;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.adv-td-value {
+  opacity: 0.9;
+}
+
+@media (max-width: 900px) {
+  .advantages-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .adv-table {
+    min-width: 560px;
+  }
+}
