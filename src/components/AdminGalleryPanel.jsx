@@ -125,7 +125,7 @@ const AdminGalleryPanel = ({ onClose }) => {
 
       {activeTab === 'manage' && (
         <div className="manage-tab">
-          <h3>Списък с снимки ({filteredImages.length})</h3>
+          <h3>Списък със снимки ({filteredImages.length})</h3>
           
           {/* Филтър по категории */}
           <div className="category-filter">
