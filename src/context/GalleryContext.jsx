@@ -1,155 +1,220 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { supabase } from "../supabase/supabaseClient";
 
-const GalleryContext = createContext();
+const GalleryContext = createContext(null);
 
+const BUCKET = "Gallery";
+const TABLE = "gallery_images";
+
+// eslint-disable-next-line react-refresh/only-export-components
 export const useGallery = () => {
-  const context = useContext(GalleryContext);
-  if (!context) {
-    throw new Error('useGallery must be used within a GalleryProvider');
-  }
-  return context;
+  const ctx = useContext(GalleryContext);
+  if (!ctx) throw new Error("useGallery must be used within a GalleryProvider");
+  return ctx;
 };
+
+function safeFileName(name) {
+  return (name || "image").replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
+function uniqueId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function publicUrlFor(path) {
+  if (!path) return "";
+  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return data?.publicUrl || "";
+}
+
+function mapRow(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    category: row.category,
+    description: row.description ?? "",
+    storagePath: row.storage_path,
+    createdAt: row.created_at,
+    src: publicUrlFor(row.storage_path),
+  };
+}
 
 export const GalleryProvider = ({ children }) => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Зареждане на снимки от localStorage при стартиране
-  useEffect(() => {
-    const savedImages = localStorage.getItem('galleryImages');
-    if (savedImages) {
-      setGalleryImages(JSON.parse(savedImages));
-    } else {
-      // Начални снимки с НОВИТЕ категории
-      const initialImages = [
-        {
-          id: 1,
-          src: 'https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Секционни индустриални врати',
-          category: 'Индустриални врати',
-          description: 'Висококачествени секционни врати за индустриални и складови нужди'
-        },
-        {
-          id: 2,
-          src: 'https://images.unsplash.com/photo-1576013551627-0f20b5260d1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Гаражни секционни врати',
-          category: 'Гаражни врати',
-          description: 'Модерни и сигурни гаражни врати за дома и бизнеса'
-        },
-        {
-          id: 3,
-          src: 'https://images.unsplash.com/photo-1558618666-fcd25856cd63?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Автоматични отварящи системи',
-          category: 'Автоматични врати',
-          description: 'Напълно автоматизирани врати с дистанционно управление'
-        },
-        {
-          id: 4,
-          src: 'https://images.unsplash.com/photo-1595421724313-4b04639b0c15?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Противопожарни защитни врати',
-          category: 'Противопожарни врати',
-          description: 'Врати с висока степен на пожарна безопасност и защита'
-        },
-        {
-          id: 5,
-          src: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Модерни входни врати',
-          category: 'Входни врати',
-          description: 'Елегантни входни врати за офиси, магазини и жилищни сгради'
-        },
-        {
-          id: 6,
-          src: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Дворни портали и врати',
-          category: 'Дворни врати / Портали',
-          description: 'Здрави и сигурни врати за външни пространства и дворове'
-        },
-        {
-          id: 7,
-          src: 'https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Индустриални ролкови врати',
-          category: 'Индустриални врати',
-          description: 'Специални ролкови врати за индустриални обекти'
-        },
-        {
-          id: 8,
-          src: 'https://images.unsplash.com/photo-1576013551627-0f20b5260d1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Автоматични гаражни врати',
-          category: 'Гаражни врати',
-          description: 'Гаражни врати с автоматично отваряне и затваряне'
-        },
-        {
-          id: 9,
-          src: 'https://images.unsplash.com/photo-1558618666-fcd25856cd63?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Слънчеви автоматични системи',
-          category: 'Автоматични врати',
-          description: 'Енергийно ефективни автоматични врати'
-        },
-        {
-          id: 10,
-          src: 'https://images.unsplash.com/photo-1595421724313-4b04639b0c15?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Противопожарни стоманени врати',
-          category: 'Противопожарни врати',
-          description: 'Стоманени врати с висока пожарна устойчивост'
-        },
-        {
-          id: 11,
-          src: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Дизайнерски входни врати',
-          category: 'Входни врати',
-          description: 'Ексклузивни входни врати с уникален дизайн'
-        },
-        {
-          id: 12,
-          src: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-          title: 'Двојни дворни портали',
-          category: 'Дворни врати / Портали',
-          description: 'Широки дворни портали за големи пространства'
-        }
-      ];
-      setGalleryImages(initialImages);
-      localStorage.setItem('galleryImages', JSON.stringify(initialImages));
+  // 1) Initial load
+  const load = useCallback(async () => {
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("id,title,category,description,storage_path,created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Gallery load error:", error);
+      setGalleryImages([]);
+      setLoading(false);
+      return;
     }
+
+    setGalleryImages((data || []).map(mapRow));
     setLoading(false);
   }, []);
 
-  const addImage = (imageData) => {
-    const newImage = {
-      id: Date.now(),
-      ...imageData
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    load();
+  }, [load]);
+
+  // 2) Optional realtime (bonus, not required)
+  useEffect(() => {
+    const channel = supabase
+      .channel("gallery_images_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: TABLE },
+        () => {
+          // If realtime is enabled, keep in sync.
+          // (Even if it's not enabled, our optimistic updates still work.)
+          load();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
-    
-    const updatedImages = [...galleryImages, newImage];
-    setGalleryImages(updatedImages);
-    localStorage.setItem('galleryImages', JSON.stringify(updatedImages));
-    return newImage;
-  };
+  }, [load]);
 
-  const updateImage = (id, updatedData) => {
-    const updatedImages = galleryImages.map(image =>
-      image.id === id ? { ...image, ...updatedData } : image
-    );
-    setGalleryImages(updatedImages);
-    localStorage.setItem('galleryImages', JSON.stringify(updatedImages));
-  };
+  // 3) Add: upload file -> insert row -> UPDATE STATE immediately
+  const addImage = useCallback(async (imageData) => {
+    const { file, title, category, description } = imageData ?? {};
 
-  const deleteImage = (id) => {
-    const updatedImages = galleryImages.filter(image => image.id !== id);
-    setGalleryImages(updatedImages);
-    localStorage.setItem('galleryImages', JSON.stringify(updatedImages));
-  };
+    if (!file) throw new Error("Липсва файл за качване.");
+    if (!title || !title.trim()) throw new Error("Липсва заглавие.");
+    if (!category || !category.trim()) throw new Error("Липсва категория.");
 
-  const value = {
-    galleryImages,
-    addImage,
-    updateImage,
-    deleteImage,
-    loading
-  };
+    const storagePath = `gallery/${uniqueId()}_${safeFileName(file.name)}`;
 
-  return (
-    <GalleryContext.Provider value={value}>
-      {children}
-    </GalleryContext.Provider>
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(storagePath, file, {
+        upsert: false,
+        cacheControl: "3600",
+        contentType: file.type || "application/octet-stream",
+      });
+
+    if (uploadError) {
+      console.error("Supabase upload error:", uploadError);
+      throw new Error("Грешка при качване в Supabase Storage.");
+    }
+
+    // Insert metadata
+    const { data: inserted, error: insertError } = await supabase
+      .from(TABLE)
+      .insert({
+        title: title.trim(),
+        category: category.trim(),
+        description: typeof description === "string" ? description.trim() : "",
+        storage_path: storagePath,
+      })
+      .select("id,title,category,description,storage_path,created_at")
+      .single();
+
+    if (insertError) {
+      // rollback file
+      await supabase.storage.from(BUCKET).remove([storagePath]);
+      console.error("Supabase insert error:", insertError);
+      throw new Error("Грешка при запис на метаданни в Supabase DB.");
+    }
+
+    const mapped = mapRow(inserted);
+
+    // ✅ IMPORTANT: update state immediately (no refresh needed)
+    setGalleryImages((prev) => [mapped, ...prev]);
+
+    return mapped;
+  }, []);
+
+  // 4) Update: update row -> UPDATE STATE immediately
+  const updateImage = useCallback(async (id, updatedData) => {
+    if (!id) return;
+
+    const payload = {};
+    if (typeof updatedData?.title === "string") payload.title = updatedData.title.trim();
+    if (typeof updatedData?.category === "string") payload.category = updatedData.category.trim();
+    if (typeof updatedData?.description === "string")
+      payload.description = updatedData.description.trim();
+
+    if (Object.keys(payload).length === 0) return;
+
+    const { data, error } = await supabase
+      .from(TABLE)
+      .update(payload)
+      .eq("id", id)
+      .select("id,title,category,description,storage_path,created_at")
+      .single();
+
+    if (error) {
+      console.error("Supabase update error:", error);
+      throw new Error("Грешка при редакция.");
+    }
+
+    const mapped = mapRow(data);
+
+    // ✅ update state
+    setGalleryImages((prev) => prev.map((x) => (x.id === id ? { ...x, ...mapped } : x)));
+
+    return mapped;
+  }, []);
+
+  // 5) Delete: delete row -> REMOVE FROM STATE immediately -> best-effort delete file
+  const deleteImage = useCallback(async (id) => {
+    if (!id) return;
+
+    // find path from current state
+    const current = galleryImages.find((x) => x.id === id);
+    const storagePath = current?.storagePath;
+
+    // delete row
+    const { error } = await supabase.from(TABLE).delete().eq("id", id);
+    if (error) {
+      console.error("Supabase delete row error:", error);
+      throw new Error("Грешка при изтриване.");
+    }
+
+    // ✅ remove from state instantly
+    setGalleryImages((prev) => prev.filter((x) => x.id !== id));
+
+    // best-effort delete file
+    if (storagePath) {
+      const { error: removeError } = await supabase.storage.from(BUCKET).remove([storagePath]);
+      if (removeError) console.warn("Supabase storage remove failed:", removeError);
+    }
+  }, [galleryImages]);
+
+  const value = useMemo(
+    () => ({
+      galleryImages,
+      loading,
+      addImage,
+      updateImage,
+      deleteImage,
+      reloadGallery: load, // optional helper
+    }),
+    [galleryImages, loading, addImage, updateImage, deleteImage, load]
   );
+
+  return <GalleryContext.Provider value={value}>{children}</GalleryContext.Provider>;
 };
