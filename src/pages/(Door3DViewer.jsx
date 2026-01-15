@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, Suspense, useRef } from "react";
-import { Canvas, useLoader, useThree } from "@react-three/fiber";
+import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls, Environment, Html, useProgress, MeshReflectorMaterial } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
@@ -8,11 +8,9 @@ import "./DoorConfigurator.css";
 
 // ДАННИТЕ ТРЯБВА ДА СА НАГОРЕ - ПРЕДИ ДА БЪДАТ ИЗПОЛЗВАНИ!
 const DOOR_TYPES = [
-  { value: "industrial", label: "Индустриална секционна врата", icon: "🏭" },
-  { value: "garage", label: "Гаражна секционна врата", icon: "🚗" },
-  { value: "sectional", label: "Секционна врата Thermo", icon: "❄️" },
-  { value: "high-speed", label: "Високоскоростна врата", icon: "⚡" },
-  { value: "fire-resistant", label: "Противопожарна врата", icon: "🔥" },
+  { value: "industrial", label: "Индустриална секционна врата" },
+  { value: "garage", label: "Гаражна секционна врата" },
+  { value: "sectional", label: "Портал" }
 ];
 
 const COLORS = [
@@ -124,13 +122,6 @@ function DoorModel({ color, materialType, wicketDoor }) {
         }
         
         child.material = newMaterial;
-        
-        // Управление на проходната врата
-        if (child.name.toLowerCase().includes('wicket') || 
-            child.name.toLowerCase().includes('personnel') ||
-            child.name.toLowerCase().includes('door') && child.name.toLowerCase().includes('small')) {
-          child.visible = wicketDoor;
-        }
       }
     });
   }, [color, materialType, wicketDoor, scene]);

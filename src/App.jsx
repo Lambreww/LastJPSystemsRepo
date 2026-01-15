@@ -19,7 +19,6 @@ import Advantages from './pages/Advantages';
 import AdminPanel from './components/AdminPanel';
 import AdminRoute from './components/AdminRoute';
 
-import { initializeSmoothScroll } from './utils/smoothScroll';
 import { trackPageview } from './analytics/track';
 import HomePage from './pages/HomePage';
 
