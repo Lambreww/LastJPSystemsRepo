@@ -1,5 +1,7 @@
 import { db } from "../firebase/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { hasAnalyticsConsent } from "../utils/cookieConsent";
+import { SESSION_KEY, SESSION_LAST_KEY, VISITOR_KEY } from "./storageKeys";
 
 /**
  * Прост "мини-analytics" (без външни услуги).
@@ -7,10 +9,6 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
  * - sessionId: пазим в sessionStorage (за текущия tab) + session timeout
  * - изпращаме: session_start (веднъж на сесия) + pageview (при route change)
  */
-
-const VISITOR_KEY = "jp_visitor_id_v1";
-const SESSION_KEY = "jp_session_id_v1";
-const SESSION_LAST_KEY = "jp_session_last_seen_v1";
 
 // 30 мин. inactivity = нова сесия
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
@@ -85,6 +83,10 @@ async function writeEvent(payload) {
  * Автоматично ще запише и session_start ако е нова сесия.
  */
 export async function trackPageview(pathname) {
+  if (!hasAnalyticsConsent()) {
+    return;
+  }
+
   const visitorId = getVisitorId();
   const { sessionId, isNew } = getOrCreateSessionId();
 

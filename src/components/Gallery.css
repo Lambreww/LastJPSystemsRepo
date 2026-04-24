@@ -65,7 +65,7 @@
   transition: all 0.3s ease;
   cursor: pointer;
   background: var(--white);
-  height: 250px;
+  min-height: 310px;
 }
 
 .gallery-item:hover {
@@ -76,7 +76,7 @@
 .gallery-image-container {
   position: relative;
   overflow: hidden;
-  height: 100%;
+  height: 250px;
 }
 
 .gallery-image-container img {
@@ -160,6 +160,64 @@
   font-size: 0.7rem;
   font-weight: 500;
   z-index: 2;
+}
+
+.gallery-product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem 1rem;
+}
+
+.gallery-product-meta__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.inventory-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #fff4ea;
+  color: #9a4a00;
+}
+
+.inventory-pill--in-stock {
+  background: #e8f7ef;
+  color: #146c43;
+}
+
+.inventory-pill--limited {
+  background: #fff4db;
+  color: #9a6700;
+}
+
+.inventory-pill--custom {
+  background: #e8f0ff;
+  color: #1d4ed8;
+}
+
+.inventory-pill--out {
+  background: #ffe9e9;
+  color: #b42318;
+}
+
+.inventory-value {
+  font-size: 0.85rem;
+  color: var(--dark-gray);
+  font-weight: 600;
+}
+
+.gallery-product-meta__price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--orange);
 }
 
 .no-images {
@@ -290,6 +348,10 @@
   }
   
   .gallery-item {
+    min-height: 260px;
+  }
+
+  .gallery-image-container {
     height: 200px;
   }
   
@@ -335,6 +397,10 @@
   }
   
   .gallery-item {
+    min-height: 240px;
+  }
+
+  .gallery-image-container {
     height: 180px;
   }
 }

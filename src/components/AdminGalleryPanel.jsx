@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGallery } from "../context/GalleryContext";
+import { STOCK_STATUS_OPTIONS } from "../utils/galleryInventory";
 import "./AdminGalleryPanel.css";
 
 const CATEGORIES = [
@@ -22,6 +23,9 @@ export default function AdminGalleryPanel() {
     title: "",
     category: CATEGORIES[0],
     description: "",
+    stockQuantity: "1",
+    stockStatus: STOCK_STATUS_OPTIONS[0],
+    price: "",
     file: null,
   });
 
@@ -38,6 +42,9 @@ export default function AdminGalleryPanel() {
     title: "",
     category: CATEGORIES[0],
     description: "",
+    stockQuantity: "",
+    stockStatus: "",
+    price: "",
   });
 
   // UI helpers
@@ -56,7 +63,7 @@ export default function AdminGalleryPanel() {
 
       if (!q) return matchesCategory;
 
-      const hay = `${img.title || ""} ${img.category || ""} ${img.description || ""}`.toLowerCase();
+      const hay = `${img.title || ""} ${img.category || ""} ${img.description || ""} ${img.stockStatus || ""} ${img.price || ""} ${img.stockQuantity || ""}`.toLowerCase();
       return matchesCategory && hay.includes(q);
     });
   }, [galleryImages, queryText, filterCategory]);
@@ -100,6 +107,9 @@ export default function AdminGalleryPanel() {
       title: "",
       category: CATEGORIES[0],
       description: "",
+      stockQuantity: "1",
+      stockStatus: STOCK_STATUS_OPTIONS[0],
+      price: "",
       file: null,
     });
 
@@ -116,6 +126,9 @@ export default function AdminGalleryPanel() {
         title: newImage.title,
         category: newImage.category,
         description: newImage.description,
+        stockQuantity: newImage.stockQuantity,
+        stockStatus: newImage.stockStatus,
+        price: newImage.price,
       });
 
       resetAddForm();
@@ -133,6 +146,9 @@ export default function AdminGalleryPanel() {
       title: img.title || "",
       category: img.category || CATEGORIES[0],
       description: img.description || "",
+      stockQuantity: img.stockQuantity || "",
+      stockStatus: img.stockStatus || "",
+      price: img.price || "",
     });
   };
 
@@ -142,6 +158,9 @@ export default function AdminGalleryPanel() {
       title: "",
       category: CATEGORIES[0],
       description: "",
+      stockQuantity: "",
+      stockStatus: "",
+      price: "",
     });
   };
 
@@ -159,6 +178,9 @@ export default function AdminGalleryPanel() {
         title: editForm.title,
         category: editForm.category,
         description: editForm.description,
+        stockQuantity: editForm.stockQuantity,
+        stockStatus: editForm.stockStatus,
+        price: editForm.price,
       });
       cancelEdit();
     } catch (e) {
@@ -267,6 +289,47 @@ export default function AdminGalleryPanel() {
             />
           </div>
 
+          <div className="agp__row agp__row--triple">
+            <div>
+              <label>Брой</label>
+              <input
+                type="number"
+                min="0"
+                value={newImage.stockQuantity}
+                onChange={(e) => setNewImage((p) => ({ ...p, stockQuantity: e.target.value }))}
+                placeholder="Напр. 4"
+                disabled={adding}
+              />
+            </div>
+
+            <div>
+              <label>Статус</label>
+              <select
+                value={newImage.stockStatus}
+                onChange={(e) => setNewImage((p) => ({ ...p, stockStatus: e.target.value }))}
+                disabled={adding}
+              >
+                <option value="">Не е зададен</option>
+                {STOCK_STATUS_OPTIONS.map((status) => (
+                  <option value={status} key={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label>Цена</label>
+              <input
+                type="text"
+                value={newImage.price}
+                onChange={(e) => setNewImage((p) => ({ ...p, price: e.target.value }))}
+                placeholder="Напр. 1 250 лв."
+                disabled={adding}
+              />
+            </div>
+          </div>
+
           <div className="agp__actions">
             <button className="agp__btn agp__btn--primary" onClick={handleAddImage} disabled={!canAdd || adding}>
               {adding ? "Качване..." : "Добави"}
@@ -331,6 +394,11 @@ export default function AdminGalleryPanel() {
                       <div className="agp__meta">
                         <div className="agp__title">{img.title}</div>
                         <div className="agp__cat">{img.category}</div>
+                        <div className="agp__inventory">
+                          <span>{img.stockQuantity ? `${img.stockQuantity} бр.` : "Без брой"}</span>
+                          <span>{img.stockStatus || "Без статус"}</span>
+                          <span>{img.price || "Без цена"}</span>
+                        </div>
                         {img.description ? <div className="agp__desc">{img.description}</div> : null}
                       </div>
 
@@ -382,6 +450,46 @@ export default function AdminGalleryPanel() {
                           onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
                           disabled={isSaving || isDeleting}
                         />
+                      </div>
+
+                      <div className="agp__row agp__row--triple">
+                        <div>
+                          <label>Брой</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={editForm.stockQuantity}
+                            onChange={(e) => setEditForm((p) => ({ ...p, stockQuantity: e.target.value }))}
+                            disabled={isSaving || isDeleting}
+                          />
+                        </div>
+
+                        <div>
+                          <label>Статус</label>
+                          <select
+                            value={editForm.stockStatus}
+                            onChange={(e) => setEditForm((p) => ({ ...p, stockStatus: e.target.value }))}
+                            disabled={isSaving || isDeleting}
+                          >
+                            <option value="">Не е зададен</option>
+                            {STOCK_STATUS_OPTIONS.map((status) => (
+                              <option value={status} key={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label>Цена</label>
+                          <input
+                            type="text"
+                            value={editForm.price}
+                            onChange={(e) => setEditForm((p) => ({ ...p, price: e.target.value }))}
+                            placeholder="Напр. 1 250 лв."
+                            disabled={isSaving || isDeleting}
+                          />
+                        </div>
                       </div>
 
                       <div className="agp__itemActions">

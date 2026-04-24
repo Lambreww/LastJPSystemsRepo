@@ -7,6 +7,11 @@ import {
   useState,
 } from "react";
 import { supabase } from "../supabase/supabaseClient";
+import {
+  getInventoryMetaForImage,
+  removeInventoryMetaForImage,
+  saveInventoryMetaForImage,
+} from "../utils/galleryInventory";
 
 const GalleryContext = createContext(null);
 
@@ -44,6 +49,7 @@ function mapRow(row) {
     storagePath: row.storage_path,
     createdAt: row.created_at,
     src: publicUrlFor(row.storage_path),
+    ...getInventoryMetaForImage(row.id),
   };
 }
 
@@ -98,7 +104,7 @@ export const GalleryProvider = ({ children }) => {
 
   // 3) Add: upload file -> insert row -> UPDATE STATE immediately
   const addImage = useCallback(async (imageData) => {
-    const { file, title, category, description } = imageData ?? {};
+    const { file, title, category, description, stockQuantity, stockStatus, price } = imageData ?? {};
 
     if (!file) throw new Error("Липсва файл за качване.");
     if (!title || !title.trim()) throw new Error("Липсва заглавие.");
@@ -140,11 +146,16 @@ export const GalleryProvider = ({ children }) => {
     }
 
     const mapped = mapRow(inserted);
+    const inventoryMeta = saveInventoryMetaForImage(inserted.id, {
+      stockQuantity,
+      stockStatus,
+      price,
+    });
 
     // ✅ IMPORTANT: update state immediately (no refresh needed)
-    setGalleryImages((prev) => [mapped, ...prev]);
+    setGalleryImages((prev) => [{ ...mapped, ...inventoryMeta }, ...prev]);
 
-    return mapped;
+    return { ...mapped, ...inventoryMeta };
   }, []);
 
   // 4) Update: update row -> UPDATE STATE immediately
@@ -157,27 +168,59 @@ export const GalleryProvider = ({ children }) => {
     if (typeof updatedData?.description === "string")
       payload.description = updatedData.description.trim();
 
-    if (Object.keys(payload).length === 0) return;
+    const hasInventoryFields =
+      Object.prototype.hasOwnProperty.call(updatedData ?? {}, "stockQuantity") ||
+      Object.prototype.hasOwnProperty.call(updatedData ?? {}, "stockStatus") ||
+      Object.prototype.hasOwnProperty.call(updatedData ?? {}, "price");
 
-    const { data, error } = await supabase
-      .from(TABLE)
-      .update(payload)
-      .eq("id", id)
-      .select("id,title,category,description,storage_path,created_at")
-      .single();
+    if (Object.keys(payload).length === 0 && !hasInventoryFields) return;
 
-    if (error) {
-      console.error("Supabase update error:", error);
-      throw new Error("Грешка при редакция.");
+    let mappedFromDb = null;
+
+    if (Object.keys(payload).length > 0) {
+      const { data, error } = await supabase
+        .from(TABLE)
+        .update(payload)
+        .eq("id", id)
+        .select("id,title,category,description,storage_path,created_at")
+        .single();
+
+      if (error) {
+        console.error("Supabase update error:", error);
+        throw new Error("Грешка при редакция.");
+      }
+
+      mappedFromDb = mapRow(data);
     }
 
-    const mapped = mapRow(data);
+    const currentImage = galleryImages.find((x) => x.id === id);
+    const inventoryMeta = hasInventoryFields
+      ? saveInventoryMetaForImage(id, {
+          stockQuantity: updatedData?.stockQuantity ?? currentImage?.stockQuantity,
+          stockStatus: updatedData?.stockStatus ?? currentImage?.stockStatus,
+          price: updatedData?.price ?? currentImage?.price,
+        })
+      : null;
 
     // ✅ update state
-    setGalleryImages((prev) => prev.map((x) => (x.id === id ? { ...x, ...mapped } : x)));
+    setGalleryImages((prev) =>
+      prev.map((x) =>
+        x.id === id
+          ? {
+              ...x,
+              ...(mappedFromDb ?? {}),
+              ...(inventoryMeta ?? {}),
+            }
+          : x
+      )
+    );
 
-    return mapped;
-  }, []);
+    return {
+      ...(currentImage ?? {}),
+      ...(mappedFromDb ?? {}),
+      ...(inventoryMeta ?? {}),
+    };
+  }, [galleryImages]);
 
   // 5) Delete: delete row -> REMOVE FROM STATE immediately -> best-effort delete file
   const deleteImage = useCallback(async (id) => {
@@ -193,6 +236,8 @@ export const GalleryProvider = ({ children }) => {
       console.error("Supabase delete row error:", error);
       throw new Error("Грешка при изтриване.");
     }
+
+    removeInventoryMetaForImage(id);
 
     // ✅ remove from state instantly
     setGalleryImages((prev) => prev.filter((x) => x.id !== id));

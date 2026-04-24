@@ -98,6 +98,16 @@
   gap: 6px;
 }
 
+.agp__row--triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.agp__row--triple > div {
+  display: grid;
+  gap: 6px;
+}
+
 .agp__row label {
   font-size: 13px;
   color: #334155;
@@ -288,7 +298,29 @@
   overflow: hidden;
 }
 
+.agp__inventory {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.agp__inventory span {
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
 /* Edit form inside card */
 .agp__edit {
   padding: 12px;
+}
+
+@media (max-width: 760px) {
+  .agp__row--triple {
+    grid-template-columns: 1fr;
+  }
 }

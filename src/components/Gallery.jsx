@@ -5,6 +5,13 @@ import './Gallery.css';
 import Modal from './Modal';
 import AdminGalleryPanel from './AdminGalleryPanel';
 
+const inventoryToneClass = {
+  'В наличност': 'inventory-pill--in-stock',
+  'Ограничена наличност': 'inventory-pill--limited',
+  'По поръчка': 'inventory-pill--custom',
+  'Изчерпан': 'inventory-pill--out',
+};
+
 const Gallery = () => {
   const [selectedCategory, setSelectedCategory] = useState('Всички');
   const [selectedImage, setSelectedImage] = useState(null);
@@ -105,6 +112,22 @@ const Gallery = () => {
     setSelectedImage(filteredImages[prevIndex]);
   };
 
+  const renderInventory = (image) => (
+    <div className="gallery-product-meta">
+      <div className="gallery-product-meta__row">
+        <span className={`inventory-pill ${inventoryToneClass[image.stockStatus] || ''}`}>
+          {image.stockStatus || 'Статус не е зададен'}
+        </span>
+        <span className="inventory-value">
+          {image.stockQuantity ? `${image.stockQuantity} бр.` : 'Без наличен брой'}
+        </span>
+      </div>
+      <div className="gallery-product-meta__price">
+        {image.price || 'Цена при запитване'}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <section id="gallery" className="gallery">
@@ -193,6 +216,7 @@ const Gallery = () => {
                       </div>
                     </div>
                   </div>
+                  {renderInventory(image)}
                   <div className="gallery-category">{image.category}</div>
                 </div>
               ))}
@@ -239,6 +263,18 @@ const Gallery = () => {
               <div className="detail-item">
                 <strong>Описание:</strong>
                 <p>{selectedImage.description}</p>
+              </div>
+              <div className="detail-item">
+                <strong>Статус:</strong>
+                <span>{selectedImage.stockStatus || 'Не е зададен'}</span>
+              </div>
+              <div className="detail-item">
+                <strong>Наличност:</strong>
+                <span>{selectedImage.stockQuantity ? `${selectedImage.stockQuantity} бр.` : 'Няма зададен брой'}</span>
+              </div>
+              <div className="detail-item">
+                <strong>Цена:</strong>
+                <span>{selectedImage.price || 'Цена при запитване'}</span>
               </div>
             </div>
 

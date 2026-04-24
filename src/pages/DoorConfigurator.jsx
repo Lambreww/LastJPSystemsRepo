@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, Suspense, useRef } from "react";
-import { Canvas, useLoader, useThree } from "@react-three/fiber";
+// eslint-disable-next-line no-unused-vars
+import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls, Environment, Html, useProgress, MeshReflectorMaterial } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
@@ -35,8 +36,6 @@ const MATERIALS = [
   { id: "pvc", name: "PVC секции", thickness: "35mm" },
 ];
 
-const WICKET_ALLOWED = new Set(["industrial", "garage", "sectional"]);
-
 // Компонент за показване на прогреса на зареждане
 function Loader() {
   const { progress } = useProgress();
@@ -57,7 +56,7 @@ function Loader() {
 }
 
 // 3D модел на вратата
-function DoorModel({ color, materialType, hasWindows, wicketDoor }) {
+function DoorModel({ color, materialType }) {
   const groupRef = useRef();
   const gltf = useLoader(GLTFLoader, "/models/garage_door.glb");
   
@@ -125,20 +124,17 @@ function DoorModel({ color, materialType, hasWindows, wicketDoor }) {
         
         child.material = newMaterial;
         
-        // Управление на прозорците
-        if (child.name.toLowerCase().includes('window') || 
-            child.name.toLowerCase().includes('glass')) {
-          child.visible = hasWindows;
-        }
-        
-        // Управление на проходната врата
-        if (child.name.toLowerCase().includes('wicket') || 
-            child.name.toLowerCase().includes('personnel')) {
-          child.visible = wicketDoor;
+        if (
+          child.name.toLowerCase().includes('window') ||
+          child.name.toLowerCase().includes('glass') ||
+          child.name.toLowerCase().includes('wicket') ||
+          child.name.toLowerCase().includes('personnel')
+        ) {
+          child.visible = false;
         }
       }
     });
-  }, [color, materialType, hasWindows, wicketDoor, scene]);
+  }, [color, materialType, scene]);
 
   return (
     <group ref={groupRef}>
@@ -200,7 +196,7 @@ function Lighting() {
 }
 
 // Основен 3D визуализатор
-function Door3DViewer({ color, material, hasWindows, wicketDoor }) {
+function Door3DViewer({ color, material }) {
   const [hdri, setHdri] = useState(null);
   const [error, setError] = useState(false);
   
@@ -230,7 +226,7 @@ function Door3DViewer({ color, material, hasWindows, wicketDoor }) {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(180deg, #0B0F19 0%, #1a202c 100%)',
+        background: 'linear-gradient(180deg, #1b1b1b 0%, #3a3a3a 100%)',
         borderRadius: '12px',
         color: 'white'
       }}>
@@ -250,7 +246,7 @@ function Door3DViewer({ color, material, hasWindows, wicketDoor }) {
       style={{ 
         width: '100%', 
         height: '100%',
-        background: 'linear-gradient(180deg, #0B0F19 0%, #1a202c 100%)'
+        background: 'linear-gradient(180deg, #2a2a2a 0%, #141414 100%)'
       }}
     >
       <Suspense fallback={<Loader />}>
@@ -259,8 +255,6 @@ function Door3DViewer({ color, material, hasWindows, wicketDoor }) {
         <DoorModel
           color={color}
           materialType={material}
-          hasWindows={hasWindows}
-          wicketDoor={wicketDoor}
         />
         
         <Ground />
@@ -282,7 +276,7 @@ function Door3DViewer({ color, material, hasWindows, wicketDoor }) {
           <div style={{
             color: 'rgba(255, 255, 255, 0.6)',
             fontSize: '12px',
-            background: 'rgba(0, 0, 0, 0.5)',
+            background: 'rgba(17, 17, 17, 0.76)',
             padding: '8px 16px',
             borderRadius: '20px',
             whiteSpace: 'nowrap'
@@ -295,7 +289,7 @@ function Door3DViewer({ color, material, hasWindows, wicketDoor }) {
   );
 }
 
-function DoorVisualization({ doorType, color, material, wicketDoor, hasWindows }) {
+function DoorVisualization({ doorType, color, material }) {
   const doorTypeLabel = DOOR_TYPES.find(d => d.value === doorType)?.label || "Секционна врата";
   const materialInfo = MATERIALS.find(m => m.id === material) || MATERIALS[0];
   
@@ -314,16 +308,6 @@ function DoorVisualization({ doorType, color, material, wicketDoor, hasWindows }
           <span className="dc-meta-chip">
             ⚙️ {materialInfo.name}
           </span>
-          {wicketDoor && (
-            <span className="dc-meta-chip">
-              🚶 Проходна врата
-            </span>
-          )}
-          {hasWindows && (
-            <span className="dc-meta-chip">
-              🔍 Прозорци
-            </span>
-          )}
         </div>
       </div>
       
@@ -331,8 +315,6 @@ function DoorVisualization({ doorType, color, material, wicketDoor, hasWindows }
         <Door3DViewer 
           color={color}
           material={material}
-          hasWindows={hasWindows}
-          wicketDoor={wicketDoor}
         />
       </div>
       
@@ -343,7 +325,7 @@ function DoorVisualization({ doorType, color, material, wicketDoor, hasWindows }
         gap: '2rem',
         marginTop: '1rem',
         padding: '1rem',
-        background: 'rgba(255,255,255,0.05)',
+        background: 'rgba(17,17,17,0.05)',
         borderRadius: '8px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -353,26 +335,16 @@ function DoorVisualization({ doorType, color, material, wicketDoor, hasWindows }
             background: 'linear-gradient(90deg, rgba(0,0,0,0.6), rgba(100,100,100,0.3), rgba(0,0,0,0.6))',
             borderRadius: '2px' 
           }} />
-          <span style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>Усилващи ребра</span>
+          <span style={{ color: '#707070', fontSize: '0.875rem' }}>Усилващи ребра</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <div style={{ 
             width: '16px', 
             height: '16px', 
-            background: 'linear-gradient(135deg, #4a5568, #718096)', 
+            background: 'linear-gradient(135deg, #555555, #8a8a8a)', 
             borderRadius: '2px' 
           }} />
-          <span style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>Ханда</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <div style={{ 
-            width: '24px', 
-            height: '24px', 
-            background: 'rgba(173, 216, 230, 0.6)', 
-            borderRadius: '4px', 
-            border: '2px solid rgba(255,255,255,0.8)' 
-          }} />
-          <span style={{ color: '#9CA3AF', fontSize: '0.875rem' }}>Прозорец</span>
+          <span style={{ color: '#707070', fontSize: '0.875rem' }}>Ханда</span>
         </div>
       </div>
     </div>
@@ -383,16 +355,6 @@ export default function DoorConfigurator() {
   const [doorType, setDoorType] = useState("industrial");
   const [color, setColor] = useState("#374151");
   const [material, setMaterial] = useState("insulated");
-  const [wicketDoor, setWicketDoor] = useState(false);
-  const [hasWindows, setHasWindows] = useState(false);
-  const [windowCount, setWindowCount] = useState(3);
-  
-  const wicketAllowed = WICKET_ALLOWED.has(doorType);
-  
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!wicketAllowed && wicketDoor) setWicketDoor(false);
-  }, [wicketAllowed, wicketDoor]);
   
   const selectedColorName = useMemo(() => {
     return COLORS.find(c => c.hex === color)?.name || "Персонализиран";
@@ -410,8 +372,6 @@ export default function DoorConfigurator() {
           doorType={doorType}
           color={color}
           material={material}
-          wicketDoor={wicketDoor}
-          hasWindows={hasWindows}
         />
 
         {/* Дясна част: Контролен панел */}
@@ -440,7 +400,7 @@ export default function DoorConfigurator() {
                 </option>
               ))}
             </select>
-            <div style={{ marginTop: '0.75rem', fontSize: '0.875rem', color: '#9CA3AF' }}>
+            <div style={{ marginTop: '0.75rem', fontSize: '0.875rem', color: '#707070' }}>
               ⚙️ <strong>{DOOR_TYPES.find(t => t.value === doorType)?.label}</strong> - подходяща за индустриални обекти, гаражи и складове
             </div>
           </div>
@@ -482,7 +442,7 @@ export default function DoorConfigurator() {
                   Цвят RAL и покритие
                 </div>
                 <div className="dc-toggle-subtitle">
-                  Избран: <strong style={{ color: '#FF6600' }}>{selectedColorName}</strong>
+                  Избран: <strong style={{ color: '#FF6B00' }}>{selectedColorName}</strong>
                 </div>
               </div>
               <div style={{
@@ -490,8 +450,8 @@ export default function DoorConfigurator() {
                 width: '40px',
                 height: '40px',
                 borderRadius: '8px',
-                border: '3px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                border: '3px solid rgba(17, 17, 17, 0.12)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)'
               }} />
             </div>
             
@@ -513,7 +473,7 @@ export default function DoorConfigurator() {
                       position: 'absolute',
                       top: '2px',
                       right: '2px',
-                      background: '#FF6600',
+                      background: '#FF6B00',
                       color: 'white',
                       fontSize: '10px',
                       width: '14px',
@@ -531,90 +491,7 @@ export default function DoorConfigurator() {
             </div>
           </div>
 
-          {/* Секция 4: Допълнителни опции */}
-          <div className="dc-section-premium">
-            <div className="dc-options-grid">
-              {/* Прозорци */}
-              <div className="dc-option-group">
-                <div className="dc-toggle-container">
-                  <div className="dc-toggle-label">
-                    <div className="dc-toggle-title">
-                      <span style={{ marginRight: '0.5rem' }}>🔍</span>
-                      Прозорци
-                    </div>
-                  </div>
-                  <label className="dc-toggle-premium">
-                    <input
-                      type="checkbox"
-                      checked={hasWindows}
-                      onChange={(e) => setHasWindows(e.target.checked)}
-                    />
-                    <span className="dc-toggle-slider"></span>
-                  </label>
-                </div>
-                
-                {hasWindows && (
-                  <div style={{ marginTop: '1rem' }}>
-                    <label style={{ fontSize: '0.875rem', color: '#9CA3AF', marginBottom: '0.5rem', display: 'block' }}>
-                      Брой прозорци:
-                    </label>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      value={windowCount}
-                      onChange={(e) => setWindowCount(parseInt(e.target.value))}
-                      style={{ width: '100%' }}
-                    />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>1</span>
-                      <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>{windowCount}</span>
-                      <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>5</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {/* Проходна врата */}
-              <div className="dc-option-group">
-                <div className="dc-toggle-container">
-                  <div className="dc-toggle-label">
-                    <div className="dc-toggle-title">
-                      <span style={{ marginRight: '0.5rem' }}>🚶</span>
-                      Проходна врата
-                    </div>
-                    <div className="dc-toggle-subtitle">
-                      {wicketAllowed 
-                        ? "Добавете малка врата в основната"
-                        : "Недостъпно за избрания тип"}
-                    </div>
-                  </div>
-                  
-                  <label className="dc-toggle-premium">
-                    <input
-                      type="checkbox"
-                      checked={wicketDoor}
-                      onChange={(e) => setWicketDoor(e.target.checked)}
-                      disabled={!wicketAllowed}
-                    />
-                    <span className="dc-toggle-slider"></span>
-                  </label>
-                </div>
-                
-                {!wicketAllowed && (
-                  <div style={{
-                    marginTop: '0.5rem',
-                    fontSize: '0.75rem',
-                    color: '#EF4444'
-                  }}>
-                    ⚠️ Недостъпно за този тип врата
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Секция 5: Резюме */}
+          {/* Секция 4: Резюме */}
           <div className="dc-summary-premium">
             <div className="dc-summary-title">Технически спецификации</div>
             
@@ -632,16 +509,6 @@ export default function DoorConfigurator() {
                 <span className="dc-summary-value">{selectedColorName}</span>
               </li>
               <li className="dc-summary-item">
-                <span className="dc-summary-label">Прозорци:</span>
-                <span className="dc-summary-value">{hasWindows ? `ДА (${windowCount} бр.)` : 'НЕ'}</span>
-              </li>
-              <li className="dc-summary-item">
-                <span className="dc-summary-label">Проходна врата:</span>
-                <span className="dc-summary-value" style={{ color: wicketDoor ? '#10B981' : '#EF4444' }}>
-                  {wicketDoor ? 'ДА' : 'НЕ'}
-                </span>
-              </li>
-              <li className="dc-summary-item">
                 <span className="dc-summary-label">Размери:</span>
                 <span className="dc-summary-value">5000 x 4000 mm</span>
               </li>
@@ -650,7 +517,7 @@ export default function DoorConfigurator() {
             <button 
               className="dc-primary-btn-premium"
               onClick={() => {
-                alert(`Запитване изпратено!\n\nТехнически спецификации:\n- Тип: ${DOOR_TYPES.find(t => t.value === doorType)?.label}\n- Материал: ${selectedMaterial.name}\n- Цвят: ${selectedColorName}\n- Прозорци: ${hasWindows ? `Да (${windowCount} бр.)` : 'Не'}\n- Проходна врата: ${wicketDoor ? 'Да' : 'Не'}`);
+                alert(`Запитване изпратено!\n\nТехнически спецификации:\n- Тип: ${DOOR_TYPES.find(t => t.value === doorType)?.label}\n- Материал: ${selectedMaterial.name}\n- Цвят: ${selectedColorName}\n- Размери: 5000 x 4000 mm`);
               }}
             >
               📧 Заявете оферта
@@ -660,7 +527,7 @@ export default function DoorConfigurator() {
               marginTop: '1rem',
               textAlign: 'center',
               fontSize: '0.75rem',
-              color: '#6B7280'
+              color: '#707070'
             }}>
               Ще получите детайлна оферта с технически чертежи
             </div>
@@ -677,9 +544,11 @@ export default function DoorConfigurator() {
         display: 'flex',
         alignItems: 'center',
         gap: '2rem',
-        color: '#6B7280',
+        color: '#707070',
         fontSize: '0.875rem',
-        background: 'rgba(30, 30, 30, 0.8)',
+        background: 'rgba(255, 255, 255, 0.92)',
+        border: '1px solid rgba(17, 17, 17, 0.08)',
+        boxShadow: '0 18px 40px rgba(0, 0, 0, 0.08)',
         padding: '1rem 2rem',
         borderRadius: '12px',
         backdropFilter: 'blur(10px)'
@@ -693,7 +562,7 @@ export default function DoorConfigurator() {
           }} />
           <span>Секционен дизайн</span>
         </div>
-        <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)' }} />
+        <div style={{ width: '1px', height: '20px', background: 'rgba(17,17,17,0.1)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <div style={{
             width: '12px',
@@ -703,13 +572,13 @@ export default function DoorConfigurator() {
           }} />
           <span>Усилващи ребра</span>
         </div>
-        <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)' }} />
+        <div style={{ width: '1px', height: '20px', background: 'rgba(17,17,17,0.1)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <div style={{
             width: '12px',
             height: '12px',
             borderRadius: '2px',
-            background: '#3B82F6'
+            background: '#bdbdbd'
           }} />
           <span>Полиуретаново уплътнение</span>
         </div>

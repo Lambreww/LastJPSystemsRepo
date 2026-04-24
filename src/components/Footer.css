@@ -3,3 +3,37 @@
   color: var(--white);
   padding: 2rem 0;
 }
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.footer-copy {
+  text-align: center;
+  color: var(--white);
+}
+
+.footer-cookie-button {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: transparent;
+  color: var(--white);
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.footer-cookie-button:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(255, 107, 0, 0.08);
+}
+
+@media (max-width: 640px) {
+  .footer-content {
+    flex-direction: column;
+  }
+}

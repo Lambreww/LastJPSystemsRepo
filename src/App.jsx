@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 
 import DoorConfigurator from "./pages/DoorConfigurator";
@@ -18,22 +18,38 @@ import Footer from './components/Footer';
 import Advantages from './pages/Advantages';
 import AdminPanel from './components/AdminPanel';
 import AdminRoute from './components/AdminRoute';
+import CookieBanner from './components/CookieBanner';
 
 import { trackPageview } from './analytics/track';
 import HomePage from './pages/HomePage';
+import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent } from './utils/cookieConsent';
 
 // ✅ само публични страници (admin не го броим)
 function AnalyticsTracker() {
   const location = useLocation();
+  const [consentVersion, setConsentVersion] = useState(0);
+
+  useEffect(() => {
+    const handleConsentChange = () => {
+      setConsentVersion((current) => current + 1);
+    };
+
+    window.addEventListener(COOKIE_CONSENT_EVENT, handleConsentChange);
+
+    return () => {
+      window.removeEventListener(COOKIE_CONSENT_EVENT, handleConsentChange);
+    };
+  }, []);
 
   useEffect(() => {
     const path = location.pathname;
 
     // изключваме admin и всичко под него
     if (path.startsWith('/admin')) return;
+    if (!hasAnalyticsConsent()) return;
 
     trackPageview(path);
-  }, [location.pathname]);
+  }, [consentVersion, location.pathname]);
 
   return null;
 }
@@ -66,6 +82,7 @@ function App() {
       </main>
 
       <Footer />
+      <CookieBanner />
     </div>
   );
 }

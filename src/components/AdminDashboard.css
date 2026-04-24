@@ -2,10 +2,65 @@
   padding: 16px 0 28px;
 }
 
+.adminDashBody {
+  position: relative;
+  transition: opacity 0.28s ease, transform 0.28s ease, filter 0.28s ease;
+}
+
+.adminDashBody.is-refreshing {
+  opacity: 0.68;
+  transform: translateY(4px);
+  filter: saturate(0.88);
+}
+
+.adminDashTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 .adminDashTitle {
-  margin: 0 0 14px 0;
+  margin: 0;
   font-size: 22px;
   font-weight: 900;
+}
+
+.rangePicker {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rangeButton {
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  background: linear-gradient(180deg, #ffffff 0%, #fff5ee 100%);
+  color: #111111;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(255, 107, 0, 0.08);
+  transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.rangeButton:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 107, 0, 0.55);
+  box-shadow: 0 12px 22px rgba(255, 107, 0, 0.14);
+}
+
+.rangeButton:disabled {
+  cursor: default;
+}
+
+.rangeButton.active {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 1) 0%, rgba(255, 145, 77, 1) 100%);
+  color: #ffffff;
+  border-color: rgba(255, 107, 0, 0.92);
+  box-shadow: 0 14px 28px rgba(255, 107, 0, 0.26);
 }
 
 .kpiGrid {
@@ -16,11 +71,12 @@
 }
 
 .kpiCard {
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, #fffaf6 100%);
   border: 1px solid rgba(255, 107, 0, 0.25);
   border-radius: 14px;
   padding: 12px 12px;
   box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
 }
 
 .kpiLabel {
@@ -45,7 +101,9 @@
 .kpiDelta.down { color: #b00020; }
 
 .chartCard {
-  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #fffaf6 100%);
   border: 1px solid rgba(255, 107, 0, 0.25);
   border-radius: 14px;
   padding: 14px 14px 10px;
@@ -61,7 +119,7 @@
 .barChart {
   height: 220px;
   display: grid;
-  grid-template-columns: repeat(14, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
   gap: 8px;
   align-items: end;
   padding: 6px 2px 2px;
@@ -86,6 +144,7 @@
 .bar {
   width: 45%;
   border-radius: 8px 8px 0 0;
+  transition: height 0.35s ease;
 }
 
 .barVisitors {
@@ -126,8 +185,70 @@
 .legendSwatch.visitors { background: rgba(255, 107, 0, 0.85); }
 .legendSwatch.regs { background: rgba(0, 0, 0, 0.75); }
 
+.adminDashOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 12px;
+  pointer-events: none;
+}
+
+.adminDashOverlay__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.82);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+  animation: dashboardOverlayIn 0.2s ease-out;
+}
+
+.adminDashOverlay__spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-top-color: var(--orange);
+  animation: dashboardSpin 0.7s linear infinite;
+}
+
+@keyframes dashboardSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dashboardOverlayIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 1200px) {
   .kpiGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .adminDashTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .adminDashOverlay {
+    justify-content: center;
   }
 }
