@@ -10,6 +10,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
 
 const AuthContext = createContext(null);
+let adminPasswordEnteredThisLoad = false;
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
@@ -47,6 +48,13 @@ export const AuthProvider = ({ children }) => {
         const data = snap.exists() ? snap.data() : null;
 
         const role = data?.role ?? "user";
+        if (role === "admin" && !adminPasswordEnteredThisLoad) {
+          await signOut(auth);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
         setUser(mapUser(fbUser, role, data ?? {}));
       } catch  {
         // ако Firestore не може да се чете поради rules/мрежа - поне да влезе като user
@@ -60,12 +68,21 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    const snap = await getDoc(doc(db, "users", cred.user.uid));
-    const data = snap.exists() ? snap.data() : null;
-    const nextUser = mapUser(cred.user, data?.role ?? "user", data ?? {});
-    setUser(nextUser);
-    return nextUser;
+    adminPasswordEnteredThisLoad = true;
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const snap = await getDoc(doc(db, "users", cred.user.uid));
+      const data = snap.exists() ? snap.data() : null;
+      const nextUser = mapUser(cred.user, data?.role ?? "user", data ?? {});
+      if (nextUser.role !== "admin") {
+        adminPasswordEnteredThisLoad = false;
+      }
+      setUser(nextUser);
+      return nextUser;
+    } catch (error) {
+      adminPasswordEnteredThisLoad = false;
+      throw error;
+    }
   };
 
   const register = async ({ firstName, lastName, email, password }) => {
@@ -89,6 +106,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    adminPasswordEnteredThisLoad = false;
     await signOut(auth);
   };
 
