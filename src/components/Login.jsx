@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Login.css";
 
@@ -30,6 +31,7 @@ const Login = ({ onClose, switchToRegister }) => {
   const [submitting, setSubmitting] = useState(false);
 
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -42,8 +44,11 @@ const Login = ({ onClose, switchToRegister }) => {
     setError("");
 
     try {
-      await login(formData.email, formData.password);
+      const loggedUser = await login(formData.email, formData.password);
       onClose?.();
+      if (loggedUser?.role === "admin") {
+        navigate("/admin", { replace: true });
+      }
     } catch (err) {
       setError(mapFirebaseError(err));
     } finally {

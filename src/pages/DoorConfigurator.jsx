@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, Suspense, useRef } from "react";
-// eslint-disable-next-line no-unused-vars
 import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls, Environment, Html, useProgress, MeshReflectorMaterial } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";

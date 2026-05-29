@@ -1,350 +1,130 @@
-import { useEffect, useState } from "react";
-import AdminDashboard from "./AdminDashboard";
-import {
-  collection,
-  getDocs,
-  orderBy,
-  query,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
-import { db } from "../firebase/firebase";
+import { useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import AdminDashboard from "./AdminDashboard";
+import AdminGalleryPanel from "./AdminGalleryPanel";
+import AdminUsersPanel from "./AdminUsersPanel";
+import "./AdminPanel.css";
+
+const ADMIN_SECTIONS = [
+  {
+    id: "analytics",
+    label: "Анализи",
+    description: "Посещения, сесии и регистрации",
+    icon: "A",
+    component: AdminDashboard,
+  },
+  {
+    id: "gallery",
+    label: "Галерия",
+    description: "Добавяне и редакция на продукти",
+    icon: "G",
+    component: AdminGalleryPanel,
+  },
+  {
+    id: "users",
+    label: "Потребители",
+    description: "Роли и достъп",
+    icon: "U",
+    component: AdminUsersPanel,
+  },
+];
 
 export default function AdminPanel() {
-  const { user } = useAuth();
-  const [users, setUsers] = useState([]);
-  const [loadingList, setLoadingList] = useState(true);
-  const [savingUid, setSavingUid] = useState(null);
-  const [error, setError] = useState("");
+  const { user, logout } = useAuth();
+  const [activeSection, setActiveSection] = useState("analytics");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const loadUsers = async () => {
-    setError("");
-    setLoadingList(true);
-    try {
-      const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
-      const snap = await getDocs(q);
-      const list = snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
-      setUsers(list);
-    } catch (e) {
-      setError(e?.message ?? String(e));
-    } finally {
-      setLoadingList(false);
-    }
-  };
+  const current = useMemo(() => {
+    return ADMIN_SECTIONS.find((section) => section.id === activeSection) ?? ADMIN_SECTIONS[0];
+  }, [activeSection]);
 
-  useEffect(() => {
-    loadUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const CurrentComponent = current.component;
 
-  const changeRole = async (targetUid, newRole) => {
-    setError("");
-    setSavingUid(targetUid);
-    try {
-      // ✅ защита: да не си махнеш админа (по UID)
-      if (targetUid === user?.uid && newRole !== "admin") {
-        setError("Не можеш да премахнеш админ правата на собствения си акаунт.");
-        return;
-      }
-
-      await updateDoc(doc(db, "users", targetUid), { role: newRole });
-      await loadUsers();
-    } catch (e) {
-      setError(e?.message ?? String(e));
-    } finally {
-      setSavingUid(null);
-    }
+  const selectSection = (sectionId) => {
+    setActiveSection(sectionId);
+    setSidebarOpen(false);
   };
 
   return (
-    <div style={page}>
-      <div style={card}>
-        <div style={topRow}>
+    <div className="adminShell">
+      <aside className={`adminShell__sidebar ${sidebarOpen ? "is-open" : ""}`}>
+        <div className="adminShell__brand">
           <div>
-            <h1 style={title}>Admin Panel</h1>
-            <p style={subtitle}>Управление на роли, потребители и анализи</p>
-            <AdminDashboard />
+            <span className="adminShell__eyebrow">JP Systems</span>
+            <h1>Admin</h1>
           </div>
-
           <button
-            onClick={loadUsers}
-            disabled={loadingList || !!savingUid}
-            style={{
-              ...btn,
-              ...(loadingList || savingUid ? btnDisabled : {}),
-            }}
+            className="adminShell__iconBtn adminShell__close"
+            type="button"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Затвори менюто"
           >
-            {loadingList ? "Зареждане..." : "Обнови"}
+            <span aria-hidden="true">×</span>
           </button>
         </div>
 
-        {error && <div style={errorBox}>{error}</div>}
+        <nav className="adminShell__nav" aria-label="Admin меню">
+          {ADMIN_SECTIONS.map((section) => {
+            const isActive = section.id === activeSection;
 
-        <div style={tableWrap}>
-          <table style={table}>
-            <thead>
-              <tr>
-                <th style={th}>Име</th>
-                <th style={th}>Имейл</th>
-                <th style={th}>Роля</th>
-                <th style={{ ...th, textAlign: "right" }}>Действия</th>
-              </tr>
-            </thead>
+            return (
+              <button
+                key={section.id}
+                type="button"
+                className={`adminShell__navItem ${isActive ? "is-active" : ""}`}
+                onClick={() => selectSection(section.id)}
+              >
+                <span className="adminShell__navIcon" aria-hidden="true">{section.icon}</span>
+                <span>
+                  <strong>{section.label}</strong>
+                  <small>{section.description}</small>
+                </span>
+              </button>
+            );
+          })}
+        </nav>
 
-            <tbody>
-              {loadingList ? (
-                <tr>
-                  <td style={tdMuted} colSpan={4}>
-                    Зареждане...
-                  </td>
-                </tr>
-              ) : users.length === 0 ? (
-                <tr>
-                  <td style={tdMuted} colSpan={4}>
-                    Няма потребители.
-                  </td>
-                </tr>
-              ) : (
-                users.map((u) => {
-                  const fullName = `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim();
-                  const role = (u.role || "user").toLowerCase();
-                  const isMe = u.uid === user?.uid;
-
-                  return (
-                    <tr key={u.uid} style={row}>
-                      <td style={td}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                          <span style={nameText}>{fullName || "-"}</span>
-                          {isMe && <span style={meBadge}>Това си ти</span>}
-                        </div>
-                      </td>
-
-                      <td style={td}>
-                        <span style={emailText}>{u.email || "-"}</span>
-                      </td>
-
-                      <td style={td}>
-                        <span
-                          style={{
-                            ...roleBadge,
-                            ...(role === "admin" ? roleAdmin : roleUser),
-                          }}
-                        >
-                          {role}
-                        </span>
-                      </td>
-
-                      <td style={{ ...td, textAlign: "right" }}>
-                        <button
-                          disabled={savingUid === u.uid || (isMe && role === "admin")}
-                          onClick={() => changeRole(u.uid, "user")}
-                          style={{
-                            ...btnSmall,
-                            ...btnGhost,
-                            ...(savingUid === u.uid || (isMe && role === "admin")
-                              ? btnDisabled
-                              : {}),
-                          }}
-                          title={isMe ? "Не можеш да се направиш user" : "Направи user"}
-                        >
-                          Make user
-                        </button>
-
-                        <button
-                          disabled={savingUid === u.uid}
-                          onClick={() => changeRole(u.uid, "admin")}
-                          style={{
-                            ...btnSmall,
-                            ...btnPrimary,
-                            ...(savingUid === u.uid ? btnDisabled : {}),
-                          }}
-                        >
-                          Make admin
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+        <div className="adminShell__account">
+          <div>
+            <span>Влязъл като</span>
+            <strong>{user?.email || "-"}</strong>
+          </div>
+          <button className="adminShell__logout" type="button" onClick={logout}>
+            Изход
+          </button>
         </div>
+      </aside>
 
-        <div style={hint}>
-          Влизаш като: <b>{user?.email || "-"}</b>
+      {sidebarOpen && (
+        <button
+          className="adminShell__scrim"
+          type="button"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Затвори менюто"
+        />
+      )}
+
+      <section className="adminShell__main">
+        <header className="adminShell__topbar">
+          <button
+            className="adminShell__iconBtn"
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Отвори менюто"
+          >
+            <span aria-hidden="true">☰</span>
+          </button>
+
+          <div>
+            <span className="adminShell__eyebrow">Администрация</span>
+            <h2>{current.label}</h2>
+          </div>
+        </header>
+
+        <div className="adminShell__content">
+          <CurrentComponent />
         </div>
-      </div>
+      </section>
     </div>
   );
 }
-
-/* =======================
-   Styles (dark-friendly)
-   ======================= */
-
-const page = {
-  padding: 24,
-  maxWidth: 1100,
-  margin: "0 auto",
-};
-
-const card = {
-  borderRadius: 16,
-  padding: 18,
-  background: "rgba(255,255,255,0.06)",
-  border: "1px solid rgba(255,255,255,0.10)",
-  backdropFilter: "blur(6px)",
-};
-
-const topRow = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: 12,
-};
-
-const title = {
-  margin: 0,
-  fontSize: 22,
-  color: "rgba(255,255,255,0.95)",
-};
-
-const subtitle = {
-  margin: "6px 0 0",
-  color: "rgba(255,255,255,0.70)",
-  fontSize: 14,
-};
-
-const errorBox = {
-  marginTop: 12,
-  padding: 12,
-  borderRadius: 12,
-  border: "1px solid rgba(255, 90, 90, 0.55)",
-  background: "rgba(255, 90, 90, 0.12)",
-  color: "rgba(255,255,255,0.92)",
-};
-
-const tableWrap = {
-  marginTop: 14,
-  borderRadius: 14,
-  overflow: "hidden",
-  border: "1px solid rgba(255,255,255,0.10)",
-  background: "rgba(0,0,0,0.25)",
-};
-
-const table = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-
-const th = {
-  textAlign: "left",
-  padding: 12,
-  fontWeight: 700,
-  fontSize: 13,
-  letterSpacing: 0.2,
-  color: "rgba(255,255,255,0.78)",
-  background: "rgba(255,255,255,0.06)",
-  borderBottom: "1px solid rgba(255,255,255,0.10)",
-};
-
-const td = {
-  padding: 12,
-  color: "rgba(255,255,255,0.88)",
-  borderBottom: "1px solid rgba(255,255,255,0.08)",
-  verticalAlign: "middle",
-};
-
-const tdMuted = {
-  ...td,
-  color: "rgba(255,255,255,0.70)",
-  textAlign: "center",
-  padding: 18,
-};
-
-const row = {
-  background: "transparent",
-};
-
-const nameText = {
-  fontWeight: 700,
-  color: "rgba(255,255,255,0.92)",
-};
-
-const emailText = {
-  color: "rgba(255,255,255,0.80)",
-  fontSize: 14,
-};
-
-const meBadge = {
-  display: "inline-flex",
-  alignSelf: "flex-start",
-  padding: "2px 8px",
-  borderRadius: 999,
-  fontSize: 12,
-  border: "1px solid rgba(255,255,255,0.16)",
-  color: "rgba(255,255,255,0.78)",
-  background: "rgba(255,255,255,0.06)",
-};
-
-const roleBadge = {
-  display: "inline-flex",
-  padding: "4px 10px",
-  borderRadius: 999,
-  fontSize: 13,
-  border: "1px solid rgba(255,255,255,0.16)",
-  textTransform: "lowercase",
-};
-
-const roleAdmin = {
-  background: "rgba(255, 149, 0, 0.16)", // оранжево
-  border: "1px solid rgba(255, 149, 0, 0.35)",
-  color: "rgba(255,255,255,0.92)",
-};
-
-const roleUser = {
-  background: "rgba(0, 180, 255, 0.14)", // синьо
-  border: "1px solid rgba(0, 180, 255, 0.30)",
-  color: "rgba(255,255,255,0.90)",
-};
-
-const btn = {
-  padding: "10px 14px",
-  borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.14)",
-  background: "rgba(255,255,255,0.08)",
-  color: "rgba(255,255,255,0.9)",
-  cursor: "pointer",
-  fontWeight: 700,
-};
-
-const btnSmall = {
-  padding: "8px 12px",
-  borderRadius: 10,
-  border: "1px solid rgba(255,255,255,0.14)",
-  cursor: "pointer",
-  fontWeight: 700,
-  color: "rgba(255,255,255,0.92)",
-  marginLeft: 8,
-};
-
-const btnPrimary = {
-  background: "rgba(255,149,0,0.22)",
-  border: "1px solid rgba(255,149,0,0.40)",
-};
-
-const btnGhost = {
-  background: "rgba(255,255,255,0.06)",
-};
-
-const btnDisabled = {
-  opacity: 0.55,
-  cursor: "not-allowed",
-};
-
-const hint = {
-  marginTop: 12,
-  color: "rgba(255,255,255,0.65)",
-  fontSize: 13,
-};

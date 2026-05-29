@@ -24,13 +24,6 @@ const Services = () => {
     }
   ];
 
-  // ... останалия services масив остава същия
-
-  const handleLearnMore = (service) => {
-    setSelectedService(service);
-    setIsModalOpen(true);
-  };
-
   const handleCallNow = () => {
     setIsCallModalOpen(true);
   };

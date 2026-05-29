@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { collection, getDocs, orderBy, query, updateDoc, doc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -13,14 +13,11 @@ const AdminUsersPanel = ({ onClose }) => {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
-  const isSuperAdmin = useMemo(() => {
-    return (
-      user?.role === "admin" &&
-      (user?.email ?? "").toLowerCase() === "lambreww@gmail.com"
-    );
+  const isAdmin = useMemo(() => {
+    return user?.role === "admin";
   }, [user]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setError("");
     setLoadingList(true);
     try {
@@ -33,12 +30,11 @@ const AdminUsersPanel = ({ onClose }) => {
     } finally {
       setLoadingList(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (isSuperAdmin) loadUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuperAdmin]);
+    if (isAdmin) loadUsers();
+  }, [isAdmin, loadUsers]);
 
   const changeRole = async (targetUid, newRole) => {
     setError("");
@@ -62,12 +58,12 @@ const AdminUsersPanel = ({ onClose }) => {
     }
   };
 
-  if (!isSuperAdmin) {
+  if (!isAdmin) {
     return (
       <div className="admin-users-panel">
         <div className="access-denied">
           <h3>🔒 Достъп отказан</h3>
-          <p>Само администраторът (lambreww@gmail.com) има достъп до този панел.</p>
+          <p>Само администратори имат достъп до този панел.</p>
         </div>
       </div>
     );
@@ -159,9 +155,11 @@ const AdminUsersPanel = ({ onClose }) => {
         </table>
       </div>
 
-      <div className="admin-actions">
-        <button className="close-btn" onClick={onClose}>Затвори</button>
-      </div>
+      {onClose && (
+        <div className="admin-actions">
+          <button className="close-btn" onClick={onClose}>Затвори</button>
+        </div>
+      )}
     </div>
   );
 };

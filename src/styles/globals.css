@@ -39,6 +39,10 @@ html, body {
   padding-top: var(--header-height);
 }
 
+.App--admin .app-content {
+  padding-top: 0;
+}
+
 section[id],
 [id="home"],
 [id="about"],

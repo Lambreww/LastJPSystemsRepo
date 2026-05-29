@@ -68,6 +68,13 @@ export default function AdminGalleryPanel() {
     });
   }, [galleryImages, queryText, filterCategory]);
 
+  const categorySummary = useMemo(() => {
+    return CATEGORIES.map((category) => ({
+      category,
+      count: (galleryImages || []).filter((img) => img.category === category).length,
+    })).filter((item) => item.count > 0);
+  }, [galleryImages]);
+
   useEffect(() => {
     // cleanup objectURL
     return () => {
@@ -214,7 +221,7 @@ export default function AdminGalleryPanel() {
       <div className="agp__header">
         <div>
           <h2>Управление на галерия</h2>
-          <p>Добавяй, редактирай и изтривай снимки. Всички потребители ще ги виждат.</p>
+          <p>Прегледай текущите снимки, наличности и категории. Управлението е по-надолу.</p>
         </div>
 
         <div className="agp__stats">
@@ -224,127 +231,50 @@ export default function AdminGalleryPanel() {
           <div className="agp__pill">
             <span>Показани:</span> <b>{filteredImages.length}</b>
           </div>
+          <a className="agp__quickAction" href="#gallery-management">
+            Добави снимка
+          </a>
         </div>
       </div>
 
-      {/* ADD FORM */}
-      <div className="agp__card">
-        <div className="agp__cardTitle">
-          <h3>Добави нова снимка</h3>
-          <span className="agp__hint">PNG/JPG/WebP • до {MAX_MB}MB</span>
+      <div className="agp__overview">
+        <div className="agp__heroCard">
+          <div>
+            <span className="agp__eyebrow">Състояние на галерията</span>
+            <strong>{galleryImages?.length ?? 0}</strong>
+            <p>качени снимки в публичната галерия</p>
+          </div>
+          <div className="agp__brandMosaic" aria-label="JP Systems">
+            <img className="agp__brandImage" src="/jp-systems-admin-logo.svg" alt="JP Systems" />
+            <span className="agp__brandDivider agp__brandDivider--left" aria-hidden="true" />
+            <span className="agp__brandDivider agp__brandDivider--right" aria-hidden="true" />
+          </div>
         </div>
 
-        <div className="agp__form">
-          <div className="agp__row">
-            <label>Снимка</label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              disabled={adding}
-            />
-          </div>
-
-          {previewSrc && (
-            <div className="agp__preview">
-              <img src={previewSrc} alt="Preview" loading="lazy" />
+        <div className="agp__categoryCard">
+          <span className="agp__eyebrow">Категории</span>
+          {categorySummary.length === 0 ? (
+            <p className="agp__categoryEmpty">Все още няма категоризирани снимки.</p>
+          ) : (
+            <div className="agp__categoryList">
+              {categorySummary.map((item) => (
+                <div className="agp__categoryRow" key={item.category}>
+                  <span>{item.category}</span>
+                  <b>{item.count}</b>
+                </div>
+              ))}
             </div>
           )}
-
-          <div className="agp__row">
-            <label>Заглавие</label>
-            <input
-              type="text"
-              value={newImage.title}
-              onChange={(e) => setNewImage((p) => ({ ...p, title: e.target.value }))}
-              placeholder="Напр. Гаражни секционни врати"
-              disabled={adding}
-            />
-          </div>
-
-          <div className="agp__row">
-            <label>Категория</label>
-            <select
-              value={newImage.category}
-              onChange={(e) => setNewImage((p) => ({ ...p, category: e.target.value }))}
-              disabled={adding}
-            >
-              {CATEGORIES.map((c) => (
-                <option value={c} key={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="agp__row">
-            <label>Описание</label>
-            <textarea
-              rows={3}
-              value={newImage.description}
-              onChange={(e) => setNewImage((p) => ({ ...p, description: e.target.value }))}
-              placeholder="Кратко описание..."
-              disabled={adding}
-            />
-          </div>
-
-          <div className="agp__row agp__row--triple">
-            <div>
-              <label>Брой</label>
-              <input
-                type="number"
-                min="0"
-                value={newImage.stockQuantity}
-                onChange={(e) => setNewImage((p) => ({ ...p, stockQuantity: e.target.value }))}
-                placeholder="Напр. 4"
-                disabled={adding}
-              />
-            </div>
-
-            <div>
-              <label>Статус</label>
-              <select
-                value={newImage.stockStatus}
-                onChange={(e) => setNewImage((p) => ({ ...p, stockStatus: e.target.value }))}
-                disabled={adding}
-              >
-                <option value="">Не е зададен</option>
-                {STOCK_STATUS_OPTIONS.map((status) => (
-                  <option value={status} key={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label>Цена</label>
-              <input
-                type="text"
-                value={newImage.price}
-                onChange={(e) => setNewImage((p) => ({ ...p, price: e.target.value }))}
-                placeholder="Напр. 1 250 лв."
-                disabled={adding}
-              />
-            </div>
-          </div>
-
-          <div className="agp__actions">
-            <button className="agp__btn agp__btn--primary" onClick={handleAddImage} disabled={!canAdd || adding}>
-              {adding ? "Качване..." : "Добави"}
-            </button>
-            <button className="agp__btn" onClick={resetAddForm} disabled={adding}>
-              Изчисти
-            </button>
-          </div>
         </div>
       </div>
 
       {/* LIST */}
-      <div className="agp__card">
+      <div className="agp__card agp__card--galleryFirst">
         <div className="agp__cardTitle agp__cardTitle--split">
-          <h3>Снимки в галерията</h3>
+          <div>
+            <h3>Снимки в галерията</h3>
+            <span className="agp__hint">Първо виждаш реалното съдържание, което клиентите виждат.</span>
+          </div>
 
           <div className="agp__toolbar">
             <input
@@ -511,6 +441,123 @@ export default function AdminGalleryPanel() {
             })}
           </div>
         )}
+      </div>
+
+      {/* ADD FORM */}
+      <div className="agp__card agp__management" id="gallery-management">
+        <div className="agp__cardTitle">
+          <div>
+            <h3>Добавяне и управление</h3>
+            <span className="agp__hint">Качи нова снимка с категория, наличност, статус и цена.</span>
+          </div>
+          <span className="agp__hint">PNG/JPG/WebP • до {MAX_MB}MB</span>
+        </div>
+
+        <div className="agp__form">
+          <div className="agp__row">
+            <label>Снимка</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              disabled={adding}
+            />
+          </div>
+
+          {previewSrc && (
+            <div className="agp__preview">
+              <img src={previewSrc} alt="Preview" loading="lazy" />
+            </div>
+          )}
+
+          <div className="agp__row">
+            <label>Заглавие</label>
+            <input
+              type="text"
+              value={newImage.title}
+              onChange={(e) => setNewImage((p) => ({ ...p, title: e.target.value }))}
+              placeholder="Напр. Гаражни секционни врати"
+              disabled={adding}
+            />
+          </div>
+
+          <div className="agp__row">
+            <label>Категория</label>
+            <select
+              value={newImage.category}
+              onChange={(e) => setNewImage((p) => ({ ...p, category: e.target.value }))}
+              disabled={adding}
+            >
+              {CATEGORIES.map((c) => (
+                <option value={c} key={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="agp__row">
+            <label>Описание</label>
+            <textarea
+              rows={3}
+              value={newImage.description}
+              onChange={(e) => setNewImage((p) => ({ ...p, description: e.target.value }))}
+              placeholder="Кратко описание..."
+              disabled={adding}
+            />
+          </div>
+
+          <div className="agp__row agp__row--triple">
+            <div>
+              <label>Брой</label>
+              <input
+                type="number"
+                min="0"
+                value={newImage.stockQuantity}
+                onChange={(e) => setNewImage((p) => ({ ...p, stockQuantity: e.target.value }))}
+                placeholder="Напр. 4"
+                disabled={adding}
+              />
+            </div>
+
+            <div>
+              <label>Статус</label>
+              <select
+                value={newImage.stockStatus}
+                onChange={(e) => setNewImage((p) => ({ ...p, stockStatus: e.target.value }))}
+                disabled={adding}
+              >
+                <option value="">Не е зададен</option>
+                {STOCK_STATUS_OPTIONS.map((status) => (
+                  <option value={status} key={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label>Цена</label>
+              <input
+                type="text"
+                value={newImage.price}
+                onChange={(e) => setNewImage((p) => ({ ...p, price: e.target.value }))}
+                placeholder="Напр. 1 250 лв."
+                disabled={adding}
+              />
+            </div>
+          </div>
+
+          <div className="agp__actions">
+            <button className="agp__btn agp__btn--primary" onClick={handleAddImage} disabled={!canAdd || adding}>
+              {adding ? "Качване..." : "Добави"}
+            </button>
+            <button className="agp__btn" onClick={resetAddForm} disabled={adding}>
+              Изчисти
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

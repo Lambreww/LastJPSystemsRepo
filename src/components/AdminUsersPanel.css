@@ -1,61 +1,85 @@
 .admin-users-panel {
-  padding: 1rem;
-  color: var(--dark-gray);
-  max-height: 80vh;
-  overflow-y: auto;
+  color: #111827;
 }
 
 .admin-header {
-  text-align: center;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid var(--orange);
-  padding-bottom: 0.75rem;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e3e7ee;
 }
 
 .admin-header h2 {
-  margin: 0 0 0.25rem 0;
-  color: var(--black);
+  margin: 0;
+  color: #111827;
+  font-size: 26px;
+  line-height: 1.1;
 }
 
 .admin-header p {
-  margin: 0;
-  color: var(--gray);
+  margin: 7px 0 0;
+  color: #667085;
 }
 
+.access-denied,
 .error-box {
-  margin: 12px 0;
-  padding: 10px 12px;
-  border: 1px solid #ff6b6b;
-  border-radius: 10px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #991b1b;
 }
 
 .toolbar {
   display: flex;
   gap: 10px;
   align-items: center;
-  margin: 12px 0;
+  margin: 16px 0;
 }
 
 .search-input {
   flex: 1;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
+  min-width: 0;
+  padding: 11px 12px;
+  border-radius: 999px;
+  border: 1px solid #d0d5dd;
   outline: none;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
 }
 
-.refresh-btn {
+.search-input:focus {
+  border-color: #ef6c00;
+  box-shadow: 0 0 0 3px rgba(239, 108, 0, 0.13);
+}
+
+.refresh-btn,
+.role-btn,
+.close-btn {
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: white;
+  border-radius: 999px;
+  border: 1px solid #d0d5dd;
+  background: #ffffff;
+  color: #111827;
   cursor: pointer;
+  font-weight: 800;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.refresh-btn:hover,
+.role-btn:hover,
+.close-btn:hover {
+  background: #f7f8fa;
+  border-color: #b8c0cc;
 }
 
 .table-wrap {
-  border: 1px solid #ddd;
-  border-radius: 12px;
   overflow: hidden;
+  border: 1px solid #e3e7ee;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 46px rgba(17, 24, 39, 0.07);
+  backdrop-filter: blur(10px);
 }
 
 .users-table {
@@ -64,53 +88,79 @@
 }
 
 .users-table th {
+  padding: 13px 14px;
   text-align: left;
-  padding: 12px;
-  background: rgba(0,0,0,0.04);
-  border-bottom: 1px solid #ddd;
+  background: #f7f8fa;
+  border-bottom: 1px solid #e3e7ee;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .users-table td {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
+  padding: 14px;
+  border-bottom: 1px solid #edf0f4;
+  color: #111827;
+}
+
+.users-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.users-table tr:hover td {
+  background: #fbfcfd;
 }
 
 .center {
   text-align: center;
-  color: var(--gray);
+  color: #667085;
 }
 
 .role-pill {
-  display: inline-block;
-  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
   border-radius: 999px;
-  border: 1px solid #ccc;
-  font-size: 13px;
+  border: 1px solid #d0d5dd;
+  background: #f7f8fa;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .role-pill.admin {
-  /* оставям без конкретни цветове, ползва border */
+  border-color: rgba(239, 108, 0, 0.28);
+  background: #fff3e8;
+  color: #c25100;
 }
 
 .role-pill.user {
-  /* оставям без конкретни цветове */
+  border-color: #d0d5dd;
+  background: #f7f8fa;
 }
 
 .actions {
   display: flex;
   gap: 8px;
-}
-
-.role-btn {
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: white;
-  cursor: pointer;
+  flex-wrap: wrap;
 }
 
 .role-btn.primary {
-  border-color: var(--orange);
+  border-color: #ef6c00;
+  background: #ef6c00;
+  color: #ffffff;
+}
+
+.role-btn.primary:hover {
+  border-color: #d65f00;
+  background: #d65f00;
+}
+
+.role-btn:disabled,
+.refresh-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .admin-actions {
@@ -119,10 +169,14 @@
   justify-content: flex-end;
 }
 
-.close-btn {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: white;
-  cursor: pointer;
+@media (max-width: 720px) {
+  .toolbar,
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
 }

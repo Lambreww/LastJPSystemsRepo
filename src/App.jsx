@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Navigate, Routes, Route, useLocation } from 'react-router-dom';
 
 import DoorConfigurator from "./pages/DoorConfigurator";
 
@@ -23,6 +23,7 @@ import CookieBanner from './components/CookieBanner';
 import { trackPageview } from './analytics/track';
 import HomePage from './pages/HomePage';
 import { COOKIE_CONSENT_EVENT, hasAnalyticsConsent } from './utils/cookieConsent';
+import { useAuth } from './context/AuthContext';
 
 // ✅ само публични страници (admin не го броим)
 function AnalyticsTracker() {
@@ -57,9 +58,17 @@ function AnalyticsTracker() {
 
 
 function App() {
+  const location = useLocation();
+  const { user } = useAuth();
+  const isAdminArea = location.pathname.startsWith('/admin');
+
+  if (user?.role === "admin" && !isAdminArea) {
+    return <Navigate to="/admin" replace />;
+  }
+
   return (
-    <div className="App">
-      <Header />
+    <div className={`App ${isAdminArea ? "App--admin" : ""}`}>
+      {!isAdminArea && <Header />}
 
       <main className="app-content">
         {/* ✅ tracking на публичните страници */}
@@ -81,8 +90,8 @@ function App() {
         </Routes>
       </main>
 
-      <Footer />
-      <CookieBanner />
+      {!isAdminArea && <Footer />}
+      {!isAdminArea && <CookieBanner />}
     </div>
   );
 }

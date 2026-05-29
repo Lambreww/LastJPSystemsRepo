@@ -60,7 +60,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const snap = await getDoc(doc(db, "users", cred.user.uid));
+    const data = snap.exists() ? snap.data() : null;
+    const nextUser = mapUser(cred.user, data?.role ?? "user", data ?? {});
+    setUser(nextUser);
+    return nextUser;
   };
 
   const register = async ({ firstName, lastName, email, password }) => {
